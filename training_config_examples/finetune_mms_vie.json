@@ -3,7 +3,7 @@
     "push_to_hub": true,
     "hub_model_id": "sonktx/mms-tts-vie-finetuned",
     "overwrite_output_dir": true,
-    "output_dir": "/vits_finetuned_vie",
+    "output_dir": "/kaggle/working/vits_finetuned_vie",
 
     "dataset_name": "sonktx/httm_v2",
     "dataset_config_name": "female",
