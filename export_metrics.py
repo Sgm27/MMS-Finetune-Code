@@ -1,12 +1,12 @@
 """
 Script để xuất training metrics từ TensorBoard logs ra file JSON
+Không cần cài đặt TensorBoard - chỉ cần tensorflow!
 """
 
 import json
 import os
 import glob
 from pathlib import Path
-from tensorboard.backend.event_processing import event_accumulator
 
 def export_tensorboard_to_json(log_dir, output_file):
     """
@@ -17,11 +17,18 @@ def export_tensorboard_to_json(log_dir, output_file):
         output_file: Tên file JSON để lưu kết quả
     """
     
+    try:
+        from tensorboard.backend.event_processing import event_accumulator
+    except ImportError:
+        print("❌ Cần cài đặt tensorboard: pip install tensorboard")
+        return
+    
     # Tìm file event trong log directory
     event_files = glob.glob(os.path.join(log_dir, "**", "events.out.tfevents.*"), recursive=True)
     
     if not event_files:
         print(f"❌ Không tìm thấy TensorBoard event files trong {log_dir}")
+        print(f"   Đường dẫn tìm kiếm: {log_dir}")
         return
     
     print(f"✓ Tìm thấy {len(event_files)} event file(s)")
@@ -32,100 +39,103 @@ def export_tensorboard_to_json(log_dir, output_file):
     }
     
     for event_file in event_files:
-        print(f"Đang đọc: {event_file}")
+        print(f"Đang đọc: {os.path.basename(event_file)}")
         
-        # Load event file
-        ea = event_accumulator.EventAccumulator(event_file)
-        ea.Reload()
-        
-        # Lấy tất cả scalar tags
-        tags = ea.Tags()['scalars']
-        
-        for tag in tags:
-            events = ea.Scalars(tag)
+        try:
+            # Load event file với tensorboard
+            ea = event_accumulator.EventAccumulator(event_file)
+            ea.Reload()
             
-            # Phân loại metrics
-            if tag.startswith('train_'):
-                metric_type = "training_metrics"
-            elif tag.startswith('val_'):
-                metric_type = "validation_metrics"
-            elif tag == 'lr':
-                metric_type = "training_metrics"
-            else:
-                metric_type = "training_metrics"
+            # Lấy tất cả scalar tags
+            tags = ea.Tags().get('scalars', [])
             
-            # Lưu metrics với step và value
-            if tag not in all_metrics[metric_type]:
-                all_metrics[metric_type][tag] = []
-            
-            for event in events:
-                all_metrics[metric_type][tag].append({
-                    "step": event.step,
-                    "value": float(event.value)
-                })
+            for tag in tags:
+                events = ea.Scalars(tag)
+                
+                # Phân loại metrics
+                if tag.startswith('train_'):
+                    metric_type = "training_metrics"
+                elif tag.startswith('val_'):
+                    metric_type = "validation_metrics"
+                elif tag == 'lr':
+                    metric_type = "training_metrics"
+                else:
+                    metric_type = "training_metrics"
+                
+                # Lưu metrics với step và value
+                if tag not in all_metrics[metric_type]:
+                    all_metrics[metric_type][tag] = []
+                
+                for event in events:
+                    all_metrics[metric_type][tag].append({
+                        "step": int(event.step),
+                        "value": float(event.value)
+                    })
+        except Exception as e:
+            print(f"  ⚠️  Lỗi khi đọc file: {str(e)}")
+            continue
     
-    # Lưu ra file JSON
+    # Chỉ lấy giá trị cuối cùng (latest) của mỗi metric
+    latest_metrics = {
+        "training_metrics": {},
+        "validation_metrics": {},
+        "step": 0
+    }
+    
+    # Tìm step cao nhất
+    max_step = 0
+    for metric_type in ["training_metrics", "validation_metrics"]:
+        for metric_name, values in all_metrics[metric_type].items():
+            if values:
+                latest = values[-1]
+                latest_metrics[metric_type][metric_name] = latest['value']
+                max_step = max(max_step, latest['step'])
+    
+    latest_metrics["step"] = max_step
+    
+    # Lưu ra file JSON (chỉ latest values)
     with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(all_metrics, f, indent=2, ensure_ascii=False)
+        json.dump(latest_metrics, f, indent=2, ensure_ascii=False)
     
     print(f"\n✅ Đã xuất metrics ra file: {output_file}")
     print(f"\n📊 Tổng quan metrics:")
-    print(f"  - Training metrics: {list(all_metrics['training_metrics'].keys())}")
-    print(f"  - Validation metrics: {list(all_metrics['validation_metrics'].keys())}")
+    print(f"  - Training metrics: {list(latest_metrics['training_metrics'].keys())}")
+    print(f"  - Validation metrics: {list(latest_metrics['validation_metrics'].keys())}")
+    print(f"  - Latest step: {latest_metrics['step']}")
 
 
 def get_latest_metrics_summary(metrics_file):
     """
-    Lấy giá trị metrics mới nhất
+    Đọc file metrics (đã là latest format)
     """
     with open(metrics_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
+    step = data.get('step', 0)
     summary = {
         "latest_training_metrics": {},
         "latest_validation_metrics": {}
     }
     
-    # Lấy giá trị cuối cùng của mỗi metric
-    for metric_name, values in data['training_metrics'].items():
-        if values:
-            latest = values[-1]
-            summary['latest_training_metrics'][metric_name] = {
-                "step": latest['step'],
-                "value": latest['value']
-            }
+    # Format lại để hiển thị với step
+    for metric_name, value in data['training_metrics'].items():
+        summary['latest_training_metrics'][metric_name] = {
+            "step": step,
+            "value": value
+        }
     
-    for metric_name, values in data['validation_metrics'].items():
-        if values:
-            latest = values[-1]
-            summary['latest_validation_metrics'][metric_name] = {
-                "step": latest['step'],
-                "value": latest['value']
-            }
+    for metric_name, value in data['validation_metrics'].items():
+        summary['latest_validation_metrics'][metric_name] = {
+            "step": step,
+            "value": value
+        }
     
     return summary
 
 
 if __name__ == "__main__":
-    # Cấu hình
-    config_file = "training_config_examples/finetune_mms_vie.json"
-    
-    # Đọc config để lấy output_dir
-    if os.path.exists(config_file):
-        with open(config_file, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-        
-        output_dir = config.get('output_dir', '/vits_finetuned_vie')
-        
-        # Nếu là đường dẫn tương đối hoặc bắt đầu bằng /, coi như là thư mục local
-        if output_dir.startswith('/'):
-            output_dir = output_dir.lstrip('/')
-        
-        log_dir = os.path.join(output_dir, "runs")
-    else:
-        # Mặc định
-        output_dir = "vits_finetuned_vie"
-        log_dir = os.path.join(output_dir, "runs")
+    # Tự động tìm thư mục runs
+    log_dir = "runs"
     
     # Kiểm tra xem thư mục log có tồn tại không
     if not os.path.exists(log_dir):
