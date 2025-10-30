@@ -10,8 +10,8 @@ if HF_TOKEN:
 
 repo_id = "sonktx/httm_v2"        
 config_name = "female"        
-AUDIO_DIR = "../dataset/audio_16k/"
-TXT_DIR   = "../dataset/transcripts/"
+AUDIO_DIR = "../datasets/audio_16k/"
+TXT_DIR   = "../datasets/transcripts/"
 SR = 16000
 
 def collect_rows(audio_dir, txt_dir, speaker_tag):
