@@ -28,7 +28,8 @@ def finetune(run_id :str):
         cfg = json.load(f)
     cfg["push_to_hub"] = True
     cfg["hub_model_id"] = f"sonktx/vits-finetuned-vie-{run_id}"
-    cfg["dataset_config_name"] = run_id
+    # cfg["dataset_config_name"] = run_id
+    cfg["dataset_config_name"] = "female"
     cfg["num_train_epochs"] = 5
     config_file = f"./finetune_mms_vie_{run_id}.json"
     with open(config_file, "w", encoding="utf-8") as f:

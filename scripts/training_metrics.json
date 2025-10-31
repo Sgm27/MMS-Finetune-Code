@@ -1,0 +1,20 @@
+{
+  "training_metrics": {
+    "train_summed_losses": 18.40004539489746,
+    "train_loss_disc": 2.6109232902526855,
+    "train_loss_real_disc": 1.443265676498413,
+    "train_loss_fake_disc": 1.1676579713821411,
+    "train_loss_duration": 1.3144112825393677,
+    "train_loss_mel": 0.4910918176174164,
+    "train_loss_kl": 4.528254985809326,
+    "train_loss_fmaps": 9.730433464050293,
+    "train_loss_gen": 2.3358540534973145,
+    "lr": 9.993751518777572e-06
+  },
+  "validation_metrics": {
+    "val_loss_mel": 1.1291193962097168,
+    "val_loss_kl": 8.252747535705566,
+    "val_loss_mel_kl": 9.381866455078125
+  },
+  "step": 50
+}

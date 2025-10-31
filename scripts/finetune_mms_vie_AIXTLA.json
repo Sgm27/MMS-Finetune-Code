@@ -5,7 +5,7 @@
   "overwrite_output_dir": true,
   "output_dir": "/content/mms_vits_finetuned_vie",
   "dataset_name": "sonktx/httm_v2",
-  "dataset_config_name": "AIXTLA",
+  "dataset_config_name": "female",
   "audio_column_name": "audio",
   "text_column_name": "sentence",
   "train_split_name": "train",
