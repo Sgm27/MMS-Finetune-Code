@@ -22,17 +22,20 @@ def create_repository(run_id: str):
     print(f"Repository created at {url}")
 
 def finetune(run_id :str):
+    create_repository(run_id)
+    
     with open("./finetune_mms_vie.json", "r", encoding="utf-8") as f:
         cfg = json.load(f)
     cfg["push_to_hub"] = True
     cfg["hub_model_id"] = f"sonktx/vits-finetuned-vie-{run_id}"
     cfg["dataset_config_name"] = run_id
     cfg["num_train_epochs"] = 5
-    with open(f"./finetune_mms_vie_{run_id}.json", "w", encoding="utf-8") as f:
+    config_file = f"./finetune_mms_vie_{run_id}.json"
+    with open(config_file, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
     
-    with cfg.open("rb") as f:
-        r = requests.post(f"{SERVER}/finetune", files={"file": (cfg.name, f, "application/json")}, timeout=60)
+    with open(config_file, "rb") as f:
+        r = requests.post(f"{SERVER}/finetune", files={"file": (Path(config_file).name, f, "application/json")}, timeout=60)
     r.raise_for_status()
     print("✓ started")
 
@@ -52,4 +55,4 @@ def finetune(run_id :str):
         time.sleep(30)
 
 if __name__ == "__main__":
-    finetune()
+    finetune(run_id="AIXTLA")
