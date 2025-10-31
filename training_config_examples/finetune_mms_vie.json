@@ -1,9 +1,9 @@
 {
     "project_name": "mms_vie-finetuning",
-    "push_to_hub": true,
+    "push_to_hub": false,
     "hub_model_id": "sonktx/mms-tts-vie-finetuned",
     "overwrite_output_dir": true,
-    "output_dir": "/kaggle/working/vits_finetuned_vie",
+    "output_dir": "/content/",
 
     "dataset_name": "sonktx/httm_v2",
     "dataset_config_name": "female",
@@ -24,7 +24,7 @@
     "preprocessing_num_workers": 4,
 
     "do_train": true,
-    "num_train_epochs": 900,
+    "num_train_epochs": 10,
     "max_train_samples": 150,
     "gradient_accumulation_steps": 1,
     "gradient_checkpointing": false,
