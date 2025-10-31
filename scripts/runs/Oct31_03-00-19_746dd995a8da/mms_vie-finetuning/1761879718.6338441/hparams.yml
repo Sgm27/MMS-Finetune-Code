@@ -53,14 +53,14 @@ include_tokens_per_second: false
 jit_mode_eval: false
 label_names: None
 label_smoothing_factor: 0.0
-learning_rate: 2.0e-05
+learning_rate: 1.0e-05
 length_column_name: length
 load_best_model_at_end: false
 local_rank: 0
 log_level: passive
 log_level_replica: warning
 log_on_each_node: true
-logging_dir: /content/vits_finetuned_vie/runs/Oct24_10-12-39_52406c462858
+logging_dir: /content/runs/Oct31_03-00-19_746dd995a8da
 logging_first_step: false
 logging_nan_inf_filter: true
 logging_steps: 500
@@ -76,7 +76,7 @@ no_cuda: false
 num_train_epochs: 10
 optim: adamw_torch
 optim_args: None
-output_dir: /content/vits_finetuned_vie
+output_dir: /content/
 overwrite_output_dir: true
 past_index: -1
 per_device_eval_batch_size: 16
@@ -84,7 +84,7 @@ per_device_train_batch_size: 16
 per_gpu_eval_batch_size: None
 per_gpu_train_batch_size: None
 prediction_loss_only: false
-push_to_hub: true
+push_to_hub: false
 push_to_hub_model_id: None
 push_to_hub_organization: None
 push_to_hub_token: <PUSH_TO_HUB_TOKEN>
@@ -92,7 +92,7 @@ ray_scope: last
 remove_unused_columns: true
 report_to: '[''tensorboard'', ''wandb'']'
 resume_from_checkpoint: None
-run_name: /content/vits_finetuned_vie
+run_name: /content/
 save_on_each_node: false
 save_safetensors: true
 save_steps: 500
